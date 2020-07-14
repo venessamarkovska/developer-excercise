@@ -1,8 +1,10 @@
 package com.example.grocerystore.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.List;
 
 import static javax.persistence.GenerationType.IDENTITY;
@@ -14,16 +16,19 @@ import static javax.persistence.GenerationType.IDENTITY;
 public class Discount {
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    @NonNull
     private Long id;
 
-    @Column
-    private String description;
+    @Column(unique = true, nullable = false)
+    private String type;
 
-    @OneToMany(mappedBy = "discount", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @Column
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date created;
+
+    @ManyToMany
+    @JoinTable(name = "discounts_products", joinColumns= @JoinColumn(name= "discount_id"),
+            inverseJoinColumns=@JoinColumn(name = "product_id"))
     private List<Product> products;
 
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "purchase", nullable = false)
-    private Purchase purchase;
+
 }

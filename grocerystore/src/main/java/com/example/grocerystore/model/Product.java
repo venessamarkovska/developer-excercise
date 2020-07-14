@@ -6,6 +6,7 @@ import lombok.*;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -18,7 +19,6 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NonNull
     @Column(unique=true, nullable=false)
     private String name;
 
@@ -29,15 +29,8 @@ public class Product {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date created;
 
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "purchase_id", nullable = false)
-    private Purchase purchase;
-
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "discount_id", nullable = false)
-    private Discount discount;
-
-    public Long getId() {
-        return id;
-    }
+    @ManyToMany
+    @JoinTable(name = "discounts_products", joinColumns= @JoinColumn(name= "discount_id"),
+            inverseJoinColumns=@JoinColumn(name = "product_id"))
+    private List<Discount> discounts;
 }

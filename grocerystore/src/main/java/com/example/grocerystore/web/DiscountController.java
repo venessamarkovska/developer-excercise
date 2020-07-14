@@ -1,17 +1,14 @@
 package com.example.grocerystore.web;
 
-
 import com.example.grocerystore.exception.InvalidRequestException;
 import com.example.grocerystore.exception.NonexistingEntityException;
+import com.example.grocerystore.model.Discount;
 import com.example.grocerystore.model.ErrorResponse;
-import com.example.grocerystore.model.Product;
-import com.example.grocerystore.service.ProductService;
+import com.example.grocerystore.service.DiscountService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
@@ -19,49 +16,50 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
-import java.util.logging.Logger;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/discounts")
 @Slf4j
-public class ProductController {
+public class DiscountController {
+    private DiscountService service;
 
     @Autowired
-    private ProductService service;
+    public DiscountController(DiscountService service) {
+        this.service = service;
+    }
 
     @GetMapping
-    List<Product> getProducts() {
-        return service.getProducts();
+    List<Discount> getDiscounts() {
+        return service.getDiscounts();
     }
 
     @GetMapping("{id}")
-    Product getProduct(@PathVariable Long id) throws NonexistingEntityException {
-        return service.getProductById(id);
+    Discount getDiscount(@PathVariable Long id) throws NonexistingEntityException {
+        return service.getDiscountById(id);
     }
 
     @PostMapping
-    ResponseEntity<Product> addProduct(@RequestBody Product product) {
-        Product createdProduct = service.addProduct(product);
+    ResponseEntity<Discount> addDiscount(@RequestBody Discount discount) {
+        Discount createdDiscount = service.addDiscount(discount);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .pathSegment("{id}").buildAndExpand(createdProduct.getId()).toUri();
-        return ResponseEntity.created(location).body(createdProduct);
+                .pathSegment("{id}").buildAndExpand(createdDiscount.getId()).toUri();
+        return ResponseEntity.created(location).body(createdDiscount);
     }
 
     @DeleteMapping("{id}")
-    Product deleteProductById(@PathVariable Long id) throws NonexistingEntityException {
-        return service.deleteProductById(id);
+    Discount deleteDiscountById(@PathVariable Long id) throws NonexistingEntityException {
+        return service.deleteDiscountById(id);
     }
 
     @PutMapping("{id}")
-    Product updateProduct(@PathVariable Long id, @RequestBody Product product)
-            throws InvalidRequestException, NonexistingEntityException{
-        if( !id.equals(product.getId()) ) {
-            throw new InvalidRequestException("IDs in path (" + id + ") and product ("
-                    + product.getId() + ") are different.");
+    Discount updateDiscount(@PathVariable Long id, @RequestBody Discount discount)
+            throws InvalidRequestException, NonexistingEntityException {
+        if (!id.equals(discount.getId())) {
+            throw new InvalidRequestException("IDs in path (" + id + ") and discount ("
+                    + discount.getId() + ") are different.");
         }
-        return service.updateProduct(product);
+        return service.updateDiscount(discount);
     }
-
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleNonExistingEntityException(NonexistingEntityException ex) {
@@ -81,6 +79,4 @@ public class ProductController {
                 HttpStatus.BAD_REQUEST
         );
     }
-
-
 }
