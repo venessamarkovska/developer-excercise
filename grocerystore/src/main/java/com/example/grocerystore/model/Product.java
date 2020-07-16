@@ -23,7 +23,7 @@ public class Product {
     private String name;
 
     @Column
-    private BigDecimal price;
+    private int price;
 
     @Column
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

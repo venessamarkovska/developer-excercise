@@ -1,5 +1,6 @@
 package com.example.grocerystore.web;
 
+import com.example.grocerystore.exception.NonexistingEntityException;
 import com.example.grocerystore.model.Purchase;
 import com.example.grocerystore.service.PurchaseService;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/purchase")
@@ -22,5 +24,10 @@ public class PurchaseController {
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .pathSegment("{id}").buildAndExpand(createdPurchase.getId()).toUri();
         return ResponseEntity.created(location).body(createdPurchase);
+    }
+
+    @GetMapping("{id}")
+    int getPurchase(@PathVariable Long id) throws NonexistingEntityException {
+        return service.getBill(id);
     }
 }

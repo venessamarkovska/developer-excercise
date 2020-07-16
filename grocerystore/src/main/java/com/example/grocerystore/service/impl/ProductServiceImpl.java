@@ -1,13 +1,12 @@
 package com.example.grocerystore.service.impl;
 
 import com.example.grocerystore.dao.ProductRepository;
+import com.example.grocerystore.exception.EntityAlreadyExistsException;
 import com.example.grocerystore.exception.NonexistingEntityException;
 import com.example.grocerystore.model.Product;
 import com.example.grocerystore.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,8 +20,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product addProduct(Product product) {
-        return repo.save(product);
+    public Product addProduct(Product product) throws EntityAlreadyExistsException {
+        if (repo.findByName(product.getName()) != null) {
+            throw new EntityAlreadyExistsException("Entity with this name =" + product.getName() + " already exists.");
+        } else {
+            return repo.save(product);
+        }
     }
 
     @Override
@@ -50,5 +53,13 @@ public class ProductServiceImpl implements ProductService {
         return repo.save(product);
     }
 
+    @Override
+    public Product getProductByName(String name) throws NonexistingEntityException {
+        if (name != null && repo.findByName(name) != null) {
+            return repo.findByName(name);
+        } else {
+            throw new NonexistingEntityException("Entity with name=" + name + " does not exist.");
+        }
 
+    }
 }

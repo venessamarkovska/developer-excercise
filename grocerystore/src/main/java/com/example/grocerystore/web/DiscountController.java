@@ -1,5 +1,6 @@
 package com.example.grocerystore.web;
 
+import com.example.grocerystore.exception.EntityAlreadyExistsException;
 import com.example.grocerystore.exception.InvalidRequestException;
 import com.example.grocerystore.exception.NonexistingEntityException;
 import com.example.grocerystore.model.Discount;
@@ -39,7 +40,7 @@ public class DiscountController {
     }
 
     @PostMapping
-    ResponseEntity<Discount> addDiscount(@RequestBody Discount discount) {
+    ResponseEntity<Discount> addDiscount(@RequestBody Discount discount) throws EntityAlreadyExistsException {
         Discount createdDiscount = service.addDiscount(discount);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .pathSegment("{id}").buildAndExpand(createdDiscount.getId()).toUri();
@@ -70,6 +71,18 @@ public class DiscountController {
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleInvalidRequestException(InvalidRequestException ex) {
+        log.error(ex.getMessage(), ex);
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
+        headers.add("X-Custom-Header", "custom_value_1");
+        return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage()),
+                headers,
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleEntityAlreadyExistsException(EntityAlreadyExistsException ex) {
         log.error(ex.getMessage(), ex);
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
         headers.add("X-Custom-Header", "custom_value_1");

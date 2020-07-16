@@ -22,8 +22,7 @@ public class Purchase {
     private Long id;
 
     @Column
-    private BigDecimal totalSum;
-    //List<Customer> customers;
+    private int totalSum;
 
     @Column
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

@@ -1,6 +1,7 @@
 package com.example.grocerystore.web;
 
 
+import com.example.grocerystore.exception.EntityAlreadyExistsException;
 import com.example.grocerystore.exception.InvalidRequestException;
 import com.example.grocerystore.exception.NonexistingEntityException;
 import com.example.grocerystore.model.ErrorResponse;
@@ -40,7 +41,7 @@ public class ProductController {
     }
 
     @PostMapping
-    ResponseEntity<Product> addProduct(@RequestBody Product product) {
+    ResponseEntity<Product> addProduct(@RequestBody Product product) throws EntityAlreadyExistsException {
         Product createdProduct = service.addProduct(product);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .pathSegment("{id}").buildAndExpand(createdProduct.getId()).toUri();
@@ -82,5 +83,15 @@ public class ProductController {
         );
     }
 
-
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleEntityAlreadyExistsException(EntityAlreadyExistsException ex) {
+        log.error(ex.getMessage(), ex);
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
+        headers.add("X-Custom-Header", "custom_value_1");
+        return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage()),
+                headers,
+                HttpStatus.BAD_REQUEST
+        );
+    }
 }

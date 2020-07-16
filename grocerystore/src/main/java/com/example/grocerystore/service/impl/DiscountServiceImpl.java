@@ -1,14 +1,17 @@
 package com.example.grocerystore.service.impl;
 
 import com.example.grocerystore.dao.DiscountRepository;
+import com.example.grocerystore.exception.EntityAlreadyExistsException;
 import com.example.grocerystore.exception.NonexistingEntityException;
 import com.example.grocerystore.model.Discount;
 import com.example.grocerystore.service.DiscountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class DiscountServiceImpl implements DiscountService {
     private DiscountRepository repo;
 
@@ -18,8 +21,12 @@ public class DiscountServiceImpl implements DiscountService {
     }
 
     @Override
-    public Discount addDiscount(Discount discount) {
-        return repo.save(discount);
+    public Discount addDiscount(Discount discount) throws EntityAlreadyExistsException {
+        if (repo.findByType(discount.getType()) != null) {
+            throw new EntityAlreadyExistsException("Entity with of type =" + discount.getType() + " already exists.");
+        } else {
+            return repo.save(discount);
+        }
     }
 
     @Override
@@ -34,13 +41,8 @@ public class DiscountServiceImpl implements DiscountService {
     }
 
     @Override
-    public Discount getDiscountByType(String type) throws NonexistingEntityException {
-        Discount discount = repo.findByType(type);
-        if (discount == null) {
-            throw new NonexistingEntityException("Entity with type=" + type + " does not exist.");
-        } else {
-            return discount;
-        }
+    public Discount getDiscountByType(String type){
+        return repo.findByType(type);
     }
 
     @Override
