@@ -13,13 +13,13 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Getter
 public class Discount {
     @Id
-    @GeneratedValue(strategy = IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(unique = true, nullable = false)
     private String type;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "discounts_products", joinColumns= @JoinColumn(name= "discount_id"),
             inverseJoinColumns=@JoinColumn(name = "product_id"))
     private List<Product> products;
