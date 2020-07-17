@@ -44,9 +44,22 @@ public class PurchaseServiceImpl implements PurchaseService {
     }
 
     @Override
-    public int getBill(Long purchaseId) throws NonexistingEntityException {
+    public String getBill(Long purchaseId) throws NonexistingEntityException {
+        List<Product> products = getPurchaseById(purchaseId).getProducts();
+        return formatSum(getTotalPrice(products));
+    }
+
+    @Override
+    public int getTotalSum(Long purchaseId) throws NonexistingEntityException {
         List<Product> products = getPurchaseById(purchaseId).getProducts();
         return getTotalPrice(products);
+    }
+
+    @Override
+    public Purchase updatePurchasePrice(Long purchaseId, int totalSum) throws NonexistingEntityException {
+        Purchase purchase = getPurchaseById(purchaseId);
+        purchase.setTotalSum(totalSum);
+        return repo.save(purchase);
     }
 
     @Override
@@ -54,6 +67,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         return repo.findById(id)
                 .orElseThrow(() -> new NonexistingEntityException("Entity with ID=" + id + " does not exist."));
     }
+
 
 
     private int calculate3for2Discount(List<Product> products) throws NonexistingEntityException {
@@ -77,13 +91,12 @@ public class PurchaseServiceImpl implements PurchaseService {
             List<Product> discountedProducts = discountService.getDiscountByType(type).getProducts();
             List<Product> productsToDiscount = new ArrayList<>();
             for (Product product : products) {
-                while (productsToDiscount.size() < num) {
-                    if (discountedProducts.contains(product)) {
+                while (productsToDiscount.size() < num && discountedProducts.contains(product)) {
                         productsToDiscount.add(product);
-                    }
+                        break;
                 }
             }
-            return retriveLowestPrice(productsToDiscount);
+            return (productsToDiscount.size() == num) ? retriveLowestPrice(productsToDiscount) : 0;
         } else {
             return 0;
         }
@@ -94,7 +107,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         for(Product product : products){
             totalSum+= product.getPrice();
         }
-        return totalSum-(calculate3for2Discount(products) + calculateSecondHalfPriceDiscount(products));
+        return totalSum-= (calculate3for2Discount(products) + calculateSecondHalfPriceDiscount(products));
     }
 
     private int retriveLowestPrice(List<Product> productsToDiscount) {
@@ -111,7 +124,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     private String formatSum(int totalSum){
         int aws=0;
-        int cloud;
+        int cloud = 0;
         if(totalSum >= 100){
           aws = totalSum/100;
           cloud = totalSum % 100;

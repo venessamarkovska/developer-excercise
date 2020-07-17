@@ -26,8 +26,10 @@ public class PurchaseController {
         return ResponseEntity.created(location).body(createdPurchase);
     }
 
-    @GetMapping("{id}")
-    int getPurchase(@PathVariable Long id) throws NonexistingEntityException {
+    @GetMapping("/bill/{id}")
+    public String getBill(@PathVariable Long id) throws NonexistingEntityException {
+        int totalSum = service.getTotalSum(id);
+        service.updatePurchasePrice(id,totalSum);
         return service.getBill(id);
     }
 }

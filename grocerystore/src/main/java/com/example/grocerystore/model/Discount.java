@@ -1,10 +1,8 @@
 package com.example.grocerystore.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.*;
 
+import lombok.*;
 import javax.persistence.*;
-import java.util.Date;
 import java.util.List;
 
 import static javax.persistence.GenerationType.IDENTITY;
@@ -20,10 +18,6 @@ public class Discount {
 
     @Column(unique = true, nullable = false)
     private String type;
-
-    @Column
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date created;
 
     @ManyToMany
     @JoinTable(name = "discounts_products", joinColumns= @JoinColumn(name= "discount_id"),

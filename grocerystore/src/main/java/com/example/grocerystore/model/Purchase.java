@@ -24,17 +24,10 @@ public class Purchase {
     @Column
     private int totalSum;
 
-    @Column
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date created;
-
     @ManyToMany
     @JoinTable(name = "purchase_products", joinColumns= @JoinColumn(name= "purchase_id"),
             inverseJoinColumns=@JoinColumn(name = "product_id"))
     private List<Product> products;
 
-    @ManyToMany
-    @JoinTable(name = "purchase_discounts", joinColumns= @JoinColumn(name= "purchase_id"),
-            inverseJoinColumns=@JoinColumn(name = "discount_id"))
-    private List<Discount> discounts;
+
 }

@@ -1,12 +1,7 @@
 package com.example.grocerystore.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-
 import javax.persistence.*;
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -25,12 +20,4 @@ public class Product {
     @Column
     private int price;
 
-    @Column
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date created;
-
-    @ManyToMany
-    @JoinTable(name = "discounts_products", joinColumns= @JoinColumn(name= "discount_id"),
-            inverseJoinColumns=@JoinColumn(name = "product_id"))
-    private List<Discount> discounts;
 }
