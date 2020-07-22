@@ -1,97 +1,83 @@
 package com.example.grocerystore.web;
 
 
+import com.example.grocerystore.dto.ProductDto;
 import com.example.grocerystore.exception.EntityAlreadyExistsException;
 import com.example.grocerystore.exception.InvalidRequestException;
 import com.example.grocerystore.exception.NonexistingEntityException;
-import com.example.grocerystore.model.ErrorResponse;
 import com.example.grocerystore.model.Product;
 import com.example.grocerystore.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/products")
 @Slf4j
 public class ProductController {
+    private ProductService service;
+    private ModelMapper modelMapper;
 
     @Autowired
-    private ProductService service;
+    public ProductController(ProductService service, ModelMapper modelMapper) {
+        this.service = service;
+        this.modelMapper = modelMapper;
+    }
+
 
     @GetMapping
-    List<Product> getProducts() {
-        return service.getProducts();
+    List<ProductDto> getProducts() {
+        List<Product> products = service.getProducts();
+        return products.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("{id}")
-    Product getProduct(@PathVariable Long id) throws NonexistingEntityException {
-        return service.getProductById(id);
+    ProductDto getProduct(@PathVariable Long id) throws NonexistingEntityException {
+        return convertToDto(service.getProductById(id));
     }
 
     @PostMapping
-    ResponseEntity<Product> addProduct(@RequestBody Product product) throws EntityAlreadyExistsException {
+    ResponseEntity<ProductDto> addProduct(@RequestBody ProductDto productDto) throws EntityAlreadyExistsException {
+        Product product = convertToEntity(productDto);
         Product createdProduct = service.addProduct(product);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .pathSegment("{id}").buildAndExpand(createdProduct.getId()).toUri();
-        return ResponseEntity.created(location).body(createdProduct);
+        return ResponseEntity.created(location).body(convertToDto(createdProduct));
     }
 
     @DeleteMapping("{id}")
-    Product deleteProductById(@PathVariable Long id) throws NonexistingEntityException {
-        return service.deleteProductById(id);
+    ResponseEntity<String> deleteProductById(@PathVariable Long id) throws NonexistingEntityException {
+        service.deleteProductById(id);
+        return new ResponseEntity<String>("Product Deleted", HttpStatus.OK);
     }
 
     @PutMapping("{id}")
-    Product updateProduct(@PathVariable Long id, @RequestBody Product product)
+    ProductDto updateProduct(@PathVariable Long id, @RequestBody ProductDto productDto)
             throws InvalidRequestException, NonexistingEntityException{
+        Product product = convertToEntity(productDto);
         if( !id.equals(product.getId()) ) {
             throw new InvalidRequestException("IDs in path (" + id + ") and product ("
                     + product.getId() + ") are different.");
         }
-        return service.updateProduct(product);
+        return convertToDto(service.updateProduct(product));
     }
 
-
-    @ExceptionHandler
-    public ResponseEntity<ErrorResponse> handleNonExistingEntityException(NonexistingEntityException ex) {
-        log.error(ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage()));
+    private ProductDto convertToDto(Product product) {
+        return modelMapper.map(product, ProductDto.class);
     }
 
-    @ExceptionHandler
-    public ResponseEntity<ErrorResponse> handleInvalidRequestException(InvalidRequestException ex) {
-        log.error(ex.getMessage(), ex);
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-        headers.add("X-Custom-Header", "custom_value_1");
-        return new ResponseEntity<>(
-                new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage()),
-                headers,
-                HttpStatus.BAD_REQUEST
-        );
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<ErrorResponse> handleEntityAlreadyExistsException(EntityAlreadyExistsException ex) {
-        log.error(ex.getMessage(), ex);
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-        headers.add("X-Custom-Header", "custom_value_1");
-        return new ResponseEntity<>(
-                new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage()),
-                headers,
-                HttpStatus.BAD_REQUEST
-        );
+    private Product convertToEntity(ProductDto productDto) {
+        return modelMapper.map(productDto, Product.class);
     }
 }

@@ -19,5 +19,4 @@ public class Product {
 
     @Column
     private int price;
-
 }

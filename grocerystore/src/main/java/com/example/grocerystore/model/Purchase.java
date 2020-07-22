@@ -1,11 +1,7 @@
 package com.example.grocerystore.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-
 import javax.persistence.*;
-import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 import static javax.persistence.GenerationType.IDENTITY;

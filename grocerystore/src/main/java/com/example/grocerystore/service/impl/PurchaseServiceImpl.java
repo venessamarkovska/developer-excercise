@@ -71,16 +71,25 @@ public class PurchaseServiceImpl implements PurchaseService {
 
 
     private int calculate3for2Discount(List<Product> products) throws NonexistingEntityException {
-        return calculateDiscount(DISCOUNT_3FOR2, products);
+        List<Product> productsToDiscount = getProductsToDiscount(DISCOUNT_3FOR2, products);
+        if (productsToDiscount != null) {
+            return (productsToDiscount.size() == 3) ? retriveLowestPrice(productsToDiscount) : 0;
+        } else {
+            return 0;
+        }
     }
 
     private int calculateSecondHalfPriceDiscount(List<Product> products) throws NonexistingEntityException {
-        return  calculateDiscount(DISCOUNT_SECOND_HALF_PRICE, products)/2;
-
+        List<Product> productsToDiscount = getProductsToDiscount(DISCOUNT_SECOND_HALF_PRICE, products);
+        if (productsToDiscount != null) {
+            return ((productsToDiscount.size() == 2) && areSameType(productsToDiscount))? retriveLowestPrice(productsToDiscount)/2 : 0;
+        } else {
+            return 0;
+        }
     }
 
-    private int calculateDiscount(String type, List<Product> products) throws NonexistingEntityException {
-        if (discountService.getDiscountByType(type) != null) {
+    private List<Product> getProductsToDiscount(String type, List<Product> products) throws NonexistingEntityException {
+        if (products != null && discountService.getDiscountByType(type) != null) {
             int num = 0;
             if (type.equals(DISCOUNT_3FOR2)) {
                 num = 3;
@@ -96,9 +105,9 @@ public class PurchaseServiceImpl implements PurchaseService {
                         break;
                 }
             }
-            return (productsToDiscount.size() == num) ? retriveLowestPrice(productsToDiscount) : 0;
+            return productsToDiscount;
         } else {
-            return 0;
+            return null;
         }
     }
 
@@ -107,7 +116,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         for(Product product : products){
             totalSum+= product.getPrice();
         }
-        return totalSum-= (calculate3for2Discount(products) + calculateSecondHalfPriceDiscount(products));
+        return totalSum - (calculate3for2Discount(products) + calculateSecondHalfPriceDiscount(products));
     }
 
     private int retriveLowestPrice(List<Product> productsToDiscount) {
@@ -132,5 +141,20 @@ public class PurchaseServiceImpl implements PurchaseService {
         } else{
             return (totalSum + "cloud");
         }
+    }
+
+    private boolean areSameType(List<Product> products){
+        boolean areSameType = false;
+        if(products != null && products.size() > 1){
+            Product first = products.get(0);
+            for(int i=1; i<products.size(); i++){
+                if(products.get(i).getName().equals(first.getName())){
+                    areSameType = true;
+                }else {
+                    areSameType = false;
+                }
+            }
+        }
+        return areSameType;
     }
 }

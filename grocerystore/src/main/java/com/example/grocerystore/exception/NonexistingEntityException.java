@@ -1,6 +1,6 @@
 package com.example.grocerystore.exception;
 
-public class NonexistingEntityException extends Exception {
+public class NonexistingEntityException extends RuntimeException {
 
 	public NonexistingEntityException() {
 	}

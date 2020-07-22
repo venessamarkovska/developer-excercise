@@ -17,8 +17,12 @@ import java.util.List;
 @RequestMapping("/purchase")
 @Slf4j
 public class PurchaseController {
-    @Autowired
     private PurchaseService service;
+
+    @Autowired
+    public PurchaseController(PurchaseService purchaseService){
+        this.service = purchaseService;
+    }
 
     @PostMapping
     ResponseEntity<Purchase> addPurchase(@RequestBody Purchase purchase) {
@@ -35,10 +39,4 @@ public class PurchaseController {
         return ResponseEntity.ok(service.getBill(id));
     }
 
-    @ExceptionHandler
-    public ResponseEntity<ErrorResponse> handleNonExistingEntityException(NonexistingEntityException ex) {
-        log.error(ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage()));
-    }
 }
